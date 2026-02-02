@@ -57,7 +57,7 @@ def change_email(username: str, new_email:str):
 def create_user(username: str, email:str, password: str):
     # The code for task 7 goes here. Once implemented, remove the line below that says "pass"
     with get_session() as db: # Get a connection to the database
-        newuser = User(username, email, password)
+        newuser = User(username=username, email=email, password=password)
         try:
             db.add(newuser)
             db.commit()
@@ -80,8 +80,33 @@ def delete_user(username: str):
         db.commit()
         print(f'{username} deleted')
 
+# exercise 1
 @cli.command()
-def partialSearch(username_substr: str, email_substr: str):
+def partial_search(search:str):
+    # Exercise 1
+    with get_session() as db:
+        user = db.exec(select(User).where(User.username.contains(search))).first()
+
+        if not user:
+            user = db.exec(select(User).where(User.email.contains(search))).first()
+
+        if not user:
+            print("User not found")
+            return
+        
+        print(user)
+
+# exercise 2
+@ cli.command()
+def first_N_users(m: int = 0, n: int = 10):
+    with get_session() as db:
+        users = db.exec(select(User).offset(m).limit(n)).all()
+        if not users:
+            print("No users found")
+            return
+        
+        for user in users:
+            print(user)
 
 if __name__ == "__main__":
     cli()
